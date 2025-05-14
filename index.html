@@ -126,10 +126,13 @@
         };
 
         await fetch(
-          ""https://script.google.com/macros/s/AKfycbzPcYJw83rIYfqcfFQmD3Up2NviSsgsAmU48UqkfvfHCu6mbD29QwmZ2ptWCHpNR9c/exec",
+          "https://script.google.com/macros/s/AKfycbzPcYJw83rIYfqcfFQmD3Up2NviSsgsAmU48UqkfvfHCu6mbD29QwmZ2ptWCHpNR9c/exec",
           {
             method: "POST",
-            body: JSON.stringify(data),
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams(data),
           }
         );
 
