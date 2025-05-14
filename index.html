@@ -19,8 +19,8 @@
     <form id="form">
       <label>Nama Lengkap <input name="nama" required /></label>
 
-      <label
-        >Kelompok Sambung
+      <label>
+        Kelompok Sambung
         <select name="kelompok" required>
           <option>Pandanwangi 1</option>
           <option>Pandanwangi 2</option>
@@ -32,8 +32,8 @@
 
       <label>No Telp <input name="telepon" required /></label>
 
-      <label
-        >Punya Kendaraan?
+      <label>
+        Punya Kendaraan?
         <select name="kendaraan" id="kendaraan" required>
           <option value="Tidak">Tidak</option>
           <option value="Ya">Ya</option>
@@ -41,8 +41,8 @@
       </label>
 
       <div id="beraniContainer" style="display: none">
-        <label
-          >Berani bawa ke jalan raya?
+        <label>
+          Berani bawa ke jalan raya?
           <select name="beraniBawa">
             <option value="Tidak">Tidak</option>
             <option value="Ya">Ya</option>
@@ -50,16 +50,16 @@
         </label>
       </div>
 
-      <label
-        >Gender
+      <label>
+        Gender
         <select name="gender" required>
           <option>Laki-laki</option>
           <option>Perempuan</option>
         </select>
       </label>
 
-      <label
-        >Opsi Pembayaran
+      <label>
+        Opsi Pembayaran
         <select name="pembayaran" id="pembayaran" required>
           <option value="Cash">Cash</option>
           <option value="Transfer">Transfer</option>
@@ -67,8 +67,8 @@
       </label>
 
       <div id="buktiContainer" style="display: none">
-        <label
-          >Upload Bukti Pembayaran
+        <label>
+          Upload Bukti Pembayaran
           <input type="file" id="bukti" accept="image/*" />
         </label>
       </div>
@@ -85,6 +85,9 @@
       const beraniContainer = document.getElementById("beraniContainer");
       const buktiContainer = document.getElementById("buktiContainer");
       const status = document.getElementById("status");
+
+      const imgbbAPIKey = "fd041dedfd18553197e870bcd213ee72";
+      const scriptURL = "https://script.google.com/macros/s/AKfycbzPcYJw83rIYfqcfFQmD3Up2NviSsgsAmU48UqkfvfHCu6mbD29QwmZ2ptWCHpNR9c/exec";
 
       kendaraan.addEventListener("change", () => {
         beraniContainer.style.display =
@@ -108,10 +111,19 @@
             return;
           }
 
-          // Simpan file ke Imgbb atau simpan link-nya manual
-          alert(
-            "Upload bukti manual dulu ya karena versi ini belum punya upload otomatis."
+          const base64 = await toBase64(file);
+          const imgForm = new FormData();
+          imgForm.append("image", base64);
+
+          const res = await fetch(
+            `https://api.imgbb.com/1/upload?key=${imgbbAPIKey}`,
+            {
+              method: "POST",
+              body: imgForm,
+            }
           );
+          const result = await res.json();
+          buktiUrl = result.data.url;
         }
 
         const data = {
@@ -119,28 +131,35 @@
           kelompok: formData.get("kelompok"),
           telepon: formData.get("telepon"),
           kendaraan: formData.get("kendaraan"),
-          beraniBawa: formData.get("beraniBawa"),
+          beraniBawa: formData.get("beraniBawa") || "",
           gender: formData.get("gender"),
           pembayaran: formData.get("pembayaran"),
           bukti: buktiUrl,
         };
 
-        await fetch(
-          "https://script.google.com/macros/s/AKfycbzPcYJw83rIYfqcfFQmD3Up2NviSsgsAmU48UqkfvfHCu6mbD29QwmZ2ptWCHpNR9c/exec",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: new URLSearchParams(data),
-          }
-        );
+        await fetch(scriptURL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams(data),
+        });
 
-        status.textContent = "Berhasil mendaftar!";
+        status.textContent = "✅ Pendaftaran berhasil!";
         form.reset();
         beraniContainer.style.display = "none";
         buktiContainer.style.display = "none";
       });
+
+      function toBase64(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () =>
+            resolve(reader.result.split(",")[1]); // hapus prefix "data:image/png;base64,"
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
     </script>
   </body>
 </html>
