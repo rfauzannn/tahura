@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Form Pendaftaran Tahura</title>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+      }
+      label {
+        display: block;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Pendaftaran Tahura MHS x MUMI CNB</h1>
+    <form id="form">
+      <label>Nama Lengkap <input name="nama" required /></label>
+
+      <label
+        >Kelompok Sambung
+        <select name="kelompok" required>
+          <option>Pandanwangi 1</option>
+          <option>Pandanwangi 2</option>
+          <option>Cibiru Wetan</option>
+          <option>Panyileukan</option>
+          <option>Permata Biru</option>
+        </select>
+      </label>
+
+      <label>No Telp <input name="telepon" required /></label>
+
+      <label
+        >Punya Kendaraan?
+        <select name="kendaraan" id="kendaraan" required>
+          <option value="Tidak">Tidak</option>
+          <option value="Ya">Ya</option>
+        </select>
+      </label>
+
+      <div id="beraniContainer" style="display: none">
+        <label
+          >Berani bawa ke jalan raya?
+          <select name="beraniBawa">
+            <option value="Tidak">Tidak</option>
+            <option value="Ya">Ya</option>
+          </select>
+        </label>
+      </div>
+
+      <label
+        >Gender
+        <select name="gender" required>
+          <option>Laki-laki</option>
+          <option>Perempuan</option>
+        </select>
+      </label>
+
+      <label
+        >Opsi Pembayaran
+        <select name="pembayaran" id="pembayaran" required>
+          <option value="Cash">Cash</option>
+          <option value="Transfer">Transfer</option>
+        </select>
+      </label>
+
+      <div id="buktiContainer" style="display: none">
+        <label
+          >Upload Bukti Pembayaran
+          <input type="file" id="bukti" accept="image/*" />
+        </label>
+      </div>
+
+      <button type="submit">Daftar</button>
+    </form>
+
+    <p id="status"></p>
+
+    <script>
+      const form = document.getElementById("form");
+      const kendaraan = document.getElementById("kendaraan");
+      const pembayaran = document.getElementById("pembayaran");
+      const beraniContainer = document.getElementById("beraniContainer");
+      const buktiContainer = document.getElementById("buktiContainer");
+      const status = document.getElementById("status");
+
+      kendaraan.addEventListener("change", () => {
+        beraniContainer.style.display =
+          kendaraan.value === "Ya" ? "block" : "none";
+      });
+
+      pembayaran.addEventListener("change", () => {
+        buktiContainer.style.display =
+          pembayaran.value === "Transfer" ? "block" : "none";
+      });
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        let buktiUrl = "";
+
+        if (formData.get("pembayaran") === "Transfer") {
+          const file = document.getElementById("bukti").files[0];
+          if (!file) {
+            alert("Mohon upload bukti transfer.");
+            return;
+          }
+
+          // Simpan file ke Imgbb atau simpan link-nya manual
+          alert(
+            "Upload bukti manual dulu ya karena versi ini belum punya upload otomatis."
+          );
+        }
+
+        const data = {
+          nama: formData.get("nama"),
+          kelompok: formData.get("kelompok"),
+          telepon: formData.get("telepon"),
+          kendaraan: formData.get("kendaraan"),
+          beraniBawa: formData.get("beraniBawa"),
+          gender: formData.get("gender"),
+          pembayaran: formData.get("pembayaran"),
+          bukti: buktiUrl,
+        };
+
+        await fetch(
+          "https://script.google.com/macros/s/AKfycbzPcYJw83rIYfqcfFQmD3Up2NviSsgsAmU48UqkfvfHCu6mbD29QwmZ2ptWCHpNR9c/exec",
+          {
+            method: "POST",
+            body: JSON.stringify(data),
+          }
+        );
+
+        status.textContent = "Berhasil mendaftar!";
+        form.reset();
+        beraniContainer.style.display = "none";
+        buktiContainer.style.display = "none";
+      });
+    </script>
+  </body>
+</html>
