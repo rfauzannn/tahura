@@ -86,9 +86,6 @@
       const buktiContainer = document.getElementById("buktiContainer");
       const status = document.getElementById("status");
 
-      const imgbbAPIKey = "fd041dedfd18553197e870bcd213ee72";
-      const scriptURL = "https://script.google.com/macros/s/AKfycbzPcYJw83rIYfqcfFQmD3Up2NviSsgsAmU48UqkfvfHCu6mbD29QwmZ2ptWCHpNR9c/exec";
-
       kendaraan.addEventListener("change", () => {
         beraniContainer.style.display =
           kendaraan.value === "Ya" ? "block" : "none";
@@ -111,55 +108,39 @@
             return;
           }
 
-          const base64 = await toBase64(file);
-          const imgForm = new FormData();
-          imgForm.append("image", base64);
-
-          const res = await fetch(
-            `https://api.imgbb.com/1/upload?key=${imgbbAPIKey}`,
-            {
-              method: "POST",
-              body: imgForm,
-            }
+          // Catatan: Anda bisa gunakan imgbb/imagekit upload otomatis di sini
+          alert(
+            "Upload bukti manual dulu ya karena versi ini belum punya upload otomatis."
           );
-          const result = await res.json();
-          buktiUrl = result.data.url;
         }
 
-        const data = {
-          nama: formData.get("nama"),
-          kelompok: formData.get("kelompok"),
-          telepon: formData.get("telepon"),
-          kendaraan: formData.get("kendaraan"),
-          beraniBawa: formData.get("beraniBawa") || "",
-          gender: formData.get("gender"),
-          pembayaran: formData.get("pembayaran"),
-          bukti: buktiUrl,
-        };
+        // Buat data x-www-form-urlencoded
+        const body = new URLSearchParams();
+        body.append("nama", formData.get("nama"));
+        body.append("kelompok", formData.get("kelompok"));
+        body.append("telepon", formData.get("telepon"));
+        body.append("kendaraan", formData.get("kendaraan"));
+        body.append("beraniBawa", formData.get("beraniBawa") || "");
+        body.append("gender", formData.get("gender"));
+        body.append("pembayaran", formData.get("pembayaran"));
+        body.append("bukti", buktiUrl);
 
-        await fetch(scriptURL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: new URLSearchParams(data),
-        });
+        await fetch(
+          "https://script.google.com/macros/s/AKfycbzPcYJw83rIYfqcfFQmD3Up2NviSsgsAmU48UqkfvfHCu6mbD29QwmZ2ptWCHpNR9c/exec",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: body.toString(),
+          }
+        );
 
-        status.textContent = "✅ Pendaftaran berhasil!";
+        status.textContent = "Berhasil mendaftar!";
         form.reset();
         beraniContainer.style.display = "none";
         buktiContainer.style.display = "none";
       });
-
-      function toBase64(file) {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () =>
-            resolve(reader.result.split(",")[1]); // hapus prefix "data:image/png;base64,"
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-      }
     </script>
   </body>
 </html>
